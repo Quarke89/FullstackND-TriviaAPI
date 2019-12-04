@@ -34,6 +34,61 @@ class TriviaTestCase(unittest.TestCase):
     Write at least one test for each test for successful operation and for expected errors.
     """
 
+    def test_get_categories(self):
+        res = self.client().get('/categories')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['categories'])
+        self.assertTrue(len(data['categories']))
+
+    def test_get_paginated_questions(self):
+        res = self.client().get('/questions')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['questions'])
+        self.assertEqual(len(data['questions']),10)
+        self.assertTrue(data['total_questions'])
+
+    
+    def test_404_requesting_questions_beyond_valid_page(self):
+        res = self.client().get('/questions?page=1000', json={'rating': 1})
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'resource not found')
+
+    def test_get_questions_by_category(self):
+        res = self.client().get('categories/1/questions')
+        data = json.loads(res.data)
+
+        current_category = Category.query.filter(Category.id==1).first().type
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['current_category']['type'], current_category)
+        self.assertTrue(data['questions'])
+        self.assertTrue(data['total_questions'])
+        self.assertTrue(data['categories'])
+
+    def test_404_get_questions_by_category(self):
+        res = self.client().get('categories/123/questions')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'resource not found')
+
+
+
+
+
+
+
 
 # Make the tests conveniently executable
 if __name__ == "__main__":
