@@ -18,6 +18,13 @@ class TriviaTestCase(unittest.TestCase):
         self.database_path = "postgres://{}/{}".format('localhost:5432', self.database_name)
         setup_db(self.app, self.database_path)
 
+        self.new_question = {
+            'question': 'Who is the strongest avenger?',
+            'answer': 'Hulk',
+            'category': 4,
+            'difficulty': 2
+        }
+
         # binds the app to the current context
         with self.app.app_context():
             self.db = SQLAlchemy()
@@ -82,6 +89,62 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 404)
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], 'resource not found')
+
+    def test_delete_question(self):
+        res = self.client().delete('/questions/2')
+        data = json.loads(res.data)
+
+        question = Question.query.filter(Question.id == 2).one_or_none()
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['deleted'], 2)
+        self.assertEqual(question, None)
+        
+
+    def test_404_delete_question(self):
+        res = self.client().delete('/questions/1000')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 422)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'unprocessable')
+
+    def test_add_question(self):
+        total_questions = len(Question.query.all())
+        res = self.client().post('/questions', json=self.new_question)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['questions'])
+        self.assertEqual(data['total_questions'], total_questions + 1)
+
+   
+
+    def test_search_question(self):
+        res = self.client().post('/questions', json={'searchTerm': 'title'})
+        data = json.loads(res.data)
+
+        num_questions = len(Question.query.filter(Question.question.ilike('%title%')).all())
+
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(data['questions'])
+        self.assertEqual(len(data['questions']), num_questions)
+
+        
+
+    def test_get_quiz(self):
+        res = self.client().post('/quizzes', json={'previous_questions': [],
+                                       'quiz_category': {'id': '1',
+                                                         'type': 'Science'}})
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(data['question'])
+        self.assertEqual(data['question']['category'], 1)
+
+
 
 
 
