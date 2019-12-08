@@ -114,23 +114,218 @@ psql trivia_test < trivia.psql
 python test_flaskr.py
 ```
 
-## API
+## Endpoints
 
-Endpoints
-GET '/categories'
-GET ...
-POST ...
-DELETE ...
-
-GET '/categories'
+GET `/categories`
 - Fetches a dictionary of categories in which the keys are the ids and the value is the corresponding string of the category
 - Request Arguments: None
-- Returns: An object with a single key, categories, that contains a object of id: category_string key:value pairs. 
-{'1' : "Science",
-'2' : "Art",
-'3' : "Geography",
-'4' : "History",
-'5' : "Entertainment",
-'6' : "Sports"}
+- Returns: An object with 2 keys. status and categories an object of id: category_string key:value pairs. 
 
+Example response
+```
+{
+  "categories": {
+    "1": "Science",
+    "2": "Art",
+    "3": "Geography",
+    "4": "History",
+    "5": "Entertainment",
+    "6": "Sports"
+  },
+  "success": true
+}
+```
+
+GET `/questions`
+- Fetches paginated questions in groups of 10
+- Request Arguments: page. Page index for the paginated questions. Default 1. Usage: `/questions?page=1`
+- Returns an object with the paginated questions, categories, and total number of questions
+
+Example response
+```
+{
+  "categories": [
+    "Science",
+    "Art",
+    "Geography",
+    "History",
+    "Entertainment",
+    "Sports"
+  ],
+  "current_category": [],
+  "questions": [
+    {
+      "answer": "Apollo 13",
+      "category": 5,
+      "difficulty": 4,
+      "id": 2,
+      "question": "What movie earned Tom Hanks his third straight Oscar nomination, in 1996?"
+    },
+
+    ...
+
+    {
+      "answer": "The Palace of Versailles",
+      "category": 3,
+      "difficulty": 3,
+      "id": 14,
+      "question": "In which royal palace would you find the Hall of Mirrors?"
+    }
+  ],
+  "success": true,
+  "total_questions": 19
+}
+```
+
+GET `/categories/<int:category_id>/questions`
+
+- Fetches paginated questions in groups of 10 for a specific category
+- Request Arguments: page. Page index for the paginated questions. Default 1. Usage: `/categories/1/questions?page=1`
+- Returns an object with the paginated questions for the specified category, categories, and total number of questions
+
+Example response
+```
+{
+  "categories": [
+    "Science",
+    "Art",
+    "Geography",
+    "History",
+    "Entertainment",
+    "Sports"
+  ],
+  "current_category": {
+    "id": 6,
+    "type": "Sports"
+  },
+  "questions": [
+    {
+      "answer": "Brazil",
+      "category": 6,
+      "difficulty": 3,
+      "id": 10,
+      "question": "Which is the only team to play in every soccer World Cup tournament?"
+    },
+    {
+      "answer": "Uruguay",
+      "category": 6,
+      "difficulty": 4,
+      "id": 11,
+      "question": "Which country won the first ever soccer World Cup in 1930?"
+    }
+  ],
+  "success": true,
+  "total_questions": 2
+}
+```
+
+DELETE `/questions/<int:question_id>'`
+
+- Deletes the question speicified by the question id
+- Request Arguments: None
+- Returns an object that returns success status and the id of the deleted question
+
+Example response
+```
+{
+  "deleted": 5,
+  "success": true
+}
+```
+
+POST `/questions`
+
+- Searches the database for questions with the given search term in the payload
+- Request Payload: JSON object that contains a key `"searchTerm"` with the search phrase
+  ```
+  {
+      "searchTerm": "title"
+  }
+  ```
+- Returns an object that contains a question key with all the questions with the search term, a success key, and total questions
+
+Example response
+```
+{
+  "current_category": [],
+  "questions": [
+    {
+      "answer": "Edward Scissorhands",
+      "category": 5,
+      "difficulty": 3,
+      "id": 6,
+      "question": "What was the title of the 1990 fantasy directed by Tim Burton about a young man with multi-bladed appendages?"
+    }
+  ],
+  "success": true,
+  "total_questions": 1
+}
+```
+
+POST `/questions`
+
+- Adds a question to the database using data from the request payload
+- Request Payload: contains a JSON object with the question text, answer text, category, and difficulty rating
+  ```
+  { 
+    "question": "Who is the strongest avenger?",
+    "answer" : "hulk",
+    "category": 5,
+    "difficulty": 2
+  }
+  ```
+- Returns an object that contains paginated questions, success key, and the total questions
+
+Example response
+```
+{
+  "questions": [
+    {
+      "answer": "Apollo 13",
+      "category": 5,
+      "difficulty": 4,
+      "id": 2,
+      "question": "What movie earned Tom Hanks his third straight Oscar nomination, in 1996?"
+    },
+  ...
+    {
+      "answer": "Agra",
+      "category": 3,
+      "difficulty": 2,
+      "id": 15,
+      "question": "The Taj Mahal is located in which Indian city?"
+    }
+  ],
+  "success": true,
+  "total_questions": 20
+}
+```
+
+POST `/quizzes`
+
+- Gets questions to play the quiz
+- Request Payload: A JSON object that contains
+  -  `previous_questions` : list of previous question ids
+  -  `quiz_category` : category of questions to pick from
+```
+{ 
+	"previous_questions": [4, 15],
+	"quiz_category" : {
+        "type":"Science",
+        "id":"1"
+    }
+}
+```
+- Returns an object that contains a question which has been picked randomly based on the category and which hasnt already been played (not part of previous_questions)
+```
+{
+  "question": {
+    "answer": "The Liver",
+    "category": 1,
+    "difficulty": 4,
+    "id": 20,
+    "question": "What is the heaviest organ in the human body?"
+  },
+  "success": true
+}
 ```

@@ -37,7 +37,7 @@ def create_app(test_config=None):
     def get_categories():
         return jsonify({
             'success':  True,
-            'categories': [category.type for category in Category.query.all()]
+            'categories': {category.id: category.type for category in Category.query.all()}
         })
 
     '''
@@ -233,7 +233,7 @@ def create_app(test_config=None):
             abort(422)
 
     '''
-  error handlers for all expected errors 
+  error handlers for all expected errors
   including 404 and 422. 
   '''
     @app.errorhandler(404)
