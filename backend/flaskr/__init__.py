@@ -37,19 +37,21 @@ def create_app(test_config=None):
     def get_categories():
         return jsonify({
             'success':  True,
-            'categories': {category.id: category.type for category in Category.query.all()}
+            'categories': {category.id: category.type
+                           for category in Category.query.all()}
         })
 
     '''
-  endpoint to handle GET requests for questions, 
-  including pagination (every 10 questions). 
-  This endpoint should return a list of questions, 
-  number of total questions, current category, categories. 
+  endpoint to handle GET requests for questions,
+  including pagination (every 10 questions).
+  This endpoint should return a list of questions,
+  number of total questions, current category, categories.
 
   TEST: At this point, when you start the application
   you should see questions and categories generated,
-  ten questions per page and pagination at the bottom of the screen for three pages.
-  Clicking on the page numbers should update the questions. 
+  ten questions per page and pagination at the bottom
+  of the screen for three pages.
+  Clicking on the page numbers should update the questions.
   '''
 
     def paginate_questions(request, selection):
@@ -79,10 +81,11 @@ def create_app(test_config=None):
         })
 
     '''
-  endpoint to DELETE question using a question ID. 
+  endpoint to DELETE question using a question ID.
 
-  TEST: When you click the trash icon next to a question, the question will be removed.
-  This removal will persist in the database and when you refresh the page. 
+  TEST: When you click the trash icon next to a question,
+  the question will be removed.
+  This removal will persist in the database and when you refresh the page.
   '''
     @app.route('/questions/<int:question_id>', methods=['DELETE'])
     def delete_question_by_id(question_id):
@@ -103,26 +106,26 @@ def create_app(test_config=None):
                 'deleted': question_id,
             })
 
-        except:
+        except Exception:
             abort(422)
 
     '''
-  an endpoint to POST a new question, 
-  which will require the question and answer text, 
+  an endpoint to POST a new question,
+  which will require the question and answer text,
   category, and difficulty score.
 
-  TEST: When you submit a question on the "Add" tab, 
+  TEST: When you submit a question on the "Add" tab,
   the form will clear and the question will appear at the end of the last page
-  of the questions list in the "List" tab.  
+  of the questions list in the "List" tab.
   '''
     '''
-  POST endpoint to get questions based on a search term. 
-  It should return any questions for whom the search term 
-  is a substring of the question. 
+  POST endpoint to get questions based on a search term.
+  It should return any questions for whom the search term
+  is a substring of the question.
 
-  TEST: Search by any phrase. The questions list will update to include 
-  only question that include that string within their question. 
-  Try using the word "title" to start. 
+  TEST: Search by any phrase. The questions list will update to include
+  only question that include that string within their question.
+  Try using the word "title" to start.
   '''
 
     @app.route('/questions', methods=['POST'])
@@ -154,8 +157,10 @@ def create_app(test_config=None):
         else:
 
             try:
-                question = Question(question=new_question, answer=new_answer,
-                                    category=new_category, difficulty=new_difficulty)
+                question = Question(question=new_question,
+                                    answer=new_answer,
+                                    category=new_category,
+                                    difficulty=new_difficulty)
                 question.insert()
 
                 selection = Question.query.order_by(Question.id).all()
@@ -167,15 +172,15 @@ def create_app(test_config=None):
                     'total_questions': len(selection),
                 })
 
-            except:
+            except Exception:
                 abort(422)
 
     '''
-  GET endpoint to get questions based on category. 
+  GET endpoint to get questions based on category.
 
-  TEST: In the "List" tab / main screen, clicking on one of the 
-  categories in the left column will cause only questions of that 
-  category to be shown. 
+  TEST: In the "List" tab / main screen, clicking on one of the
+  categories in the left column will cause only questions of that
+  category to be shown.
   '''
     @app.route('/categories/<int:category_id>/questions')
     def get_questions_by_category(category_id):
@@ -183,7 +188,7 @@ def create_app(test_config=None):
             Category.id == category_id).first()
 
         selection = Question.query.order_by(Question.id).filter(
-            Question.category == category_id).all()
+            Question.category == str(category_id)).all()
         current_questions = paginate_questions(request, selection)
 
         if len(current_questions) == 0:
@@ -198,14 +203,14 @@ def create_app(test_config=None):
         })
 
     '''
-  a POST endpoint to get questions to play the quiz. 
-  This endpoint should take category and previous question parameters 
-  and return a random questions within the given category, 
-  if provided, and that is not one of the previous questions. 
+  a POST endpoint to get questions to play the quiz.
+  This endpoint should take category and previous question parameters
+  and return a random questions within the given category,
+  if provided, and that is not one of the previous questions.
 
   TEST: In the "Play" tab, after a user selects "All" or a category,
   one question at a time is displayed, the user is allowed to answer
-  and shown whether they were correct or not. 
+  and shown whether they were correct or not.
   '''
     @app.route('/quizzes', methods=['POST'])
     def get_quiz_questions():
@@ -222,19 +227,21 @@ def create_app(test_config=None):
                 question = Question.query.filter(~Question.id.in_(
                     previous_questions)).order_by(func.random()).first()
             else:
-                question = Question.query.filter(Question.category == category_id).filter(
-                    ~Question.id.in_(previous_questions)).order_by(func.random()).first()
+                question = Question.query.filter(Question.category ==
+                                                 category_id).filter(
+                        ~Question.id.in_(previous_questions)).order_by(
+                            func.random()).first()
 
             return jsonify({
                 'success':  True,
                 'question': question.format() if question else None
             })
-        except:
+        except Exception:
             abort(422)
 
     '''
   error handlers for all expected errors
-  including 404 and 422. 
+  including 404 and 422.
   '''
     @app.errorhandler(404)
     def not_found(error):
