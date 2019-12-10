@@ -125,6 +125,14 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(data['questions'])
         self.assertEqual(len(data['questions']), num_questions)
 
+    def test_not_found_search(self):
+        res = self.client().post('/questions', json={'searchTerm': 'jkljksdh'})
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], "resource not found")
+
     def test_get_quiz(self):
         res = self.client().post('/quizzes',
                                  json={'previous_questions': [],
@@ -135,6 +143,17 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertTrue(data['question'])
         self.assertEqual(data['question']['category'], 1)
+
+    def test_422_get_quiz(self):
+        res = self.client().post('/quizzes',
+                                 json={
+                                        'previous_questions': []
+                                    })
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 422)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'unprocessable')
 
 
 # Make the tests conveniently executable
